@@ -1,0 +1,115 @@
+services:
+  api:
+    depends_on:
+      dawn-model-gateway:
+        condition: service_healthy
+    environment:
+      CONFIG_PATH: /app/dawn/librechat.yaml
+      PORT: "3080"
+      DAWN_GATEWAY_API_KEY: ${DAWN_GATEWAY_API_KEY}
+      DOMAIN_CLIENT: http://127.0.0.1:${DAWN_LIBRECHAT_PORT:-3080}
+      DOMAIN_SERVER: http://127.0.0.1:${DAWN_LIBRECHAT_PORT:-3080}
+      ALLOW_REGISTRATION: ${DAWN_ALLOW_REGISTRATION:-true}
+      ALLOW_SOCIAL_LOGIN: "false"
+    volumes:
+      - type: bind
+        source: ./dawn/librechat.yaml
+        target: /app/dawn/librechat.yaml
+        read_only: true
+    ports: !override
+      - name: dawn-librechat
+        target: 3080
+        published: "${DAWN_LIBRECHAT_PORT:-3080}"
+        host_ip: 127.0.0.1
+        protocol: tcp
+
+  admin-panel:
+    environment:
+      SESSION_SECRET: ${ADMIN_PANEL_SESSION_SECRET}
+      API_SERVER_URL: http://api:3080
+      VITE_API_BASE_URL: http://127.0.0.1:${DAWN_LIBRECHAT_PORT:-3080}
+      SESSION_COOKIE_SECURE: "false"
+    ports: !override
+      - name: dawn-librechat-admin
+        target: 3000
+        published: "${DAWN_ADMIN_PORT:-3081}"
+        host_ip: 127.0.0.1
+        protocol: tcp
+
+  # LibreChat documents that MongoDB 8 requires AVX and is not supported on Apple Silicon.
+  mongodb:
+    image: mongo:4.4.18
+
+  litellm:
+    container_name: dawn-litellm
+    image: ghcr.io/berriai/litellm:main-stable
+    restart: unless-stopped
+    command:
+      - --config
+      - /app/config.yaml
+      - --port
+      - "4000"
+      - --num_workers
+      - "1"
+    environment:
+      DAWN_LITELLM_MASTER_KEY: ${DAWN_LITELLM_MASTER_KEY}
+      LITELLM_LOG: INFO
+      NO_DOCS: "true"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - type: bind
+        source: ./dawn/litellm-config.yaml
+        target: /app/config.yaml
+        read_only: true
+    expose:
+      - "4000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import os,urllib.request;
+          req=urllib.request.Request('http://127.0.0.1:4000/health/liveliness',headers={'Authorization':'Bearer '+os.environ['DAWN_LITELLM_MASTER_KEY']});
+          urllib.request.urlopen(req,timeout=5)
+      interval: 15s
+      timeout: 7s
+      retries: 10
+      start_period: 30s
+
+  dawn-model-gateway:
+    container_name: dawn-model-gateway
+    build:
+      context: ./dawn/model-gateway
+    restart: unless-stopped
+    depends_on:
+      litellm:
+        condition: service_healthy
+    environment:
+      DAWN_UPSTREAM_BASE_URL: http://litellm:4000
+      DAWN_GATEWAY_API_KEY: ${DAWN_GATEWAY_API_KEY}
+      DAWN_LITELLM_MASTER_KEY: ${DAWN_LITELLM_MASTER_KEY}
+      DAWN_MODEL_ALIASES_JSON: >-
+        {"dawn-fast":"dawn-fast","dawn-local-reasoning":"dawn-local-reasoning"}
+      DAWN_COMPAT_DEFAULT_MODEL: ${DAWN_COMPAT_DEFAULT_MODEL:-}
+      DAWN_REQUEST_TIMEOUT_SECONDS: "300"
+      LOG_LEVEL: INFO
+    ports:
+      - name: dawn-model-gateway
+        target: 9180
+        published: "${DAWN_GATEWAY_PORT:-9180}"
+        host_ip: 127.0.0.1
+        protocol: tcp
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:9180/healthz',timeout=3)
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
