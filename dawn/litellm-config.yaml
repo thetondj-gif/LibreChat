@@ -1,0 +1,30 @@
+model_list:
+  - model_name: dawn-fast
+    litellm_params:
+      model: ollama/qwen3.5:9b
+      api_base: http://host.docker.internal:11434
+      timeout: 180
+      num_retries: 1
+
+  - model_name: dawn-local-reasoning
+    litellm_params:
+      model: ollama/ministral-3:8b
+      api_base: http://host.docker.internal:11434
+      timeout: 300
+      num_retries: 1
+
+litellm_settings:
+  drop_params: true
+  request_timeout: 300
+  set_verbose: false
+
+router_settings:
+  routing_strategy: simple-shuffle
+  num_retries: 1
+  retry_after: 1
+
+# The gateway supplies this key from dawn/.env.dawn.
+general_settings:
+  master_key: os.environ/DAWN_LITELLM_MASTER_KEY
+  store_model_in_db: false
+  disable_spend_logs: false

@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0",
+  "policy": "strict",
+  "missing_model_action": "reject",
+  "raw_model_names_allowed": false,
+  "models": {
+    "dawn-fast": {
+      "upstream": "ollama/qwen3.5:9b",
+      "purpose": "Routine chat, extraction, triage and low-latency operator work",
+      "timeout_seconds": 180
+    },
+    "dawn-local-reasoning": {
+      "upstream": "ollama/ministral-3:8b",
+      "purpose": "Bounded local analysis and reasoning",
+      "timeout_seconds": 300
+    }
+  }
+}
