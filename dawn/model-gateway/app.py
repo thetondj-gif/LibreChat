@@ -122,7 +122,7 @@ def _validate_and_resolve_model(payload: dict[str, Any]) -> tuple[str, str, bool
     if not isinstance(requested, str) or not requested.strip():
         if settings.compatibility_default_model is None:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail={
                     "code": "MODEL_REQUIRED",
                     "message": (
@@ -139,7 +139,7 @@ def _validate_and_resolve_model(payload: dict[str, Any]) -> tuple[str, str, bool
     resolved = settings.aliases.get(requested)
     if resolved is None:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail={
                 "code": "MODEL_NOT_APPROVED",
                 "message": f"Model '{requested}' is not an approved DAWN alias",
