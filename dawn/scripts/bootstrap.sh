@@ -69,4 +69,4 @@ compose=(
 
 "${compose[@]}" config --quiet
 info "Compose configuration validated."
-info "Prepared. Start with: dawn/scripts/start.sh"
+info "Prepared. Start with: bash dawn/scripts/start.sh"
