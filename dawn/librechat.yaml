@@ -1,0 +1,49 @@
+version: 1.3.13
+cache: true
+
+interface:
+  customWelcome: "DAWN Command Interface — choose an approved model or departmental agent."
+  modelSelect: true
+  parameters: true
+  presets: true
+  bookmarks: true
+  multiConvo: false
+  marketplace:
+    use: false
+  prompts:
+    use: true
+    create: true
+    share: false
+    public: false
+  agents:
+    use: true
+    create: true
+    share: false
+    public: false
+  fileSearch: true
+  fileCitations: true
+
+registration:
+  socialLogins: []
+
+transactions:
+  enabled: true
+
+endpoints:
+  custom:
+    - name: "DAWN"
+      apiKey: "${DAWN_GATEWAY_API_KEY}"
+      baseURL: "http://dawn-model-gateway:9180/v1"
+      headers:
+        X-DAWN-Caller: "librechat"
+        X-DAWN-User-ID: "{{LIBRECHAT_USER_ID}}"
+        X-DAWN-User-Email: "{{LIBRECHAT_USER_EMAIL}}"
+        X-DAWN-Conversation-ID: "{{LIBRECHAT_BODY_CONVERSATIONID}}"
+      models:
+        default:
+          - "dawn-fast"
+          - "dawn-local-reasoning"
+        fetch: false
+      titleConvo: false
+      summarize: false
+      modelDisplayLabel: "DAWN Governed Models"
