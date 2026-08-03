@@ -41,8 +41,8 @@ No production DAWN service is stopped or rewritten by these files.
 From the root of this LibreChat checkout:
 
 ```bash
-./dawn/scripts/bootstrap.sh
-./dawn/scripts/start.sh
+bash dawn/scripts/bootstrap.sh
+bash dawn/scripts/start.sh
 ```
 
 `bootstrap.sh` performs the following before any container is started:
@@ -93,14 +93,14 @@ docker compose \
   up -d --build dawn-model-gateway
 ```
 
-Every repaired request is logged with `compatibility_default_applied=true`. Remove the compatibility value after the caller is corrected and rerun `./dawn/scripts/verify.sh`.
+Every repaired request is logged with `compatibility_default_applied=true`. Remove the compatibility value after the caller is corrected and rerun `bash dawn/scripts/verify.sh`.
 
 ## Acceptance criteria
 
 The overlay is ready to connect to Hermes only when all conditions pass:
 
 ```bash
-./dawn/scripts/verify.sh
+bash dawn/scripts/verify.sh
 ```
 
 Expected terminal verdict:
@@ -137,7 +137,7 @@ LibreChat also forwards DAWN caller, user and conversation headers. These are in
 ## Rollback
 
 ```bash
-./dawn/scripts/stop.sh
+bash dawn/scripts/stop.sh
 ```
 
 This stops containers in the LibreChat Compose project. It does not stop Ollama, Hermes, the DAWN dispatcher, Hindsight, Qdrant, Langfuse or the existing V2 rebuild services.
